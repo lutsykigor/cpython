@@ -1,0 +1,7 @@
+Add experimental multi-core stream servers: :func:`asyncio.start_server` now
+accepts *workers* (a number, or ``'auto'``) to serve connections from event
+loops running in parallel, each in its own subinterpreter with its own GIL,
+inside one process. An adaptive concurrency limit queues excess connections
+instead of rejecting them, and the acceptor routes each connection to the
+least loaded worker. See :mod:`!asyncio.multicore`.
+Patch by Igor Lutsyk.

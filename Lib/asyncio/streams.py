@@ -52,7 +52,7 @@ async def open_connection(host=None, port=None, *,
 
 
 async def start_server(client_connected_cb, host=None, port=None, *,
-                       limit=_DEFAULT_LIMIT, **kwds):
+                       limit=_DEFAULT_LIMIT, workers=None, **kwds):
     """Start a socket server, call back for each client connected.
 
     The first parameter, `client_connected_cb`, takes two parameters:
@@ -70,9 +70,21 @@ async def start_server(client_connected_cb, host=None, port=None, *,
     Additional optional keyword argument is limit (to set the buffer
     limit passed to the StreamReader).
 
+    Experimental: with workers (a number, or 'auto' for one per usable CPU)
+    connections are served by event loops running in parallel, each in its
+    own subinterpreter; client_connected_cb must then be a module-level
+    function.  See asyncio.multicore.start_server() for the further keyword
+    arguments it accepts.
+
     The return value is the same as loop.create_server(), i.e. a
     Server object which can be used to stop the service.
     """
+    if workers is not None:
+        from . import multicore
+        return await multicore.start_server(
+            client_connected_cb, host, port, limit=limit, workers=workers,
+            **kwds)
+
     loop = events.get_running_loop()
 
     def factory():
